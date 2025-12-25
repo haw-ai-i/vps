@@ -1,0 +1,9 @@
+terraform_data
+# WARNING: Committing tfstate is generally discouraged because it can contain sensitive information.
+# Ensure no secrets (like private keys) are stored in your Terraform state before committing.
+# *.tfstate
+# *.tfstate.backup
+.terraform
+.terraform.lock.hcl
+*.pkrvars.hcl
+*.pkr.hcl

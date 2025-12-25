@@ -1,0 +1,16 @@
+# Your GCP Project ID
+project_id          = "ece-profee"
+
+# The region and zone to deploy the bastion
+region              = "us-central1"
+zone                = "us-central1-a"
+
+# The username that will be created on the bastion for initial admin access.
+# You can choose any name, e.g., "admin" or "bastionadmin".
+bastion_ssh_user    = "bastionadmin"
+
+# Path to YOUR local public SSH key. 
+# This key is used for the INITIAL connection to the bastion to run hardening scripts.
+# Usually found at ~/.ssh/id_ed25519.pub or ~/.ssh/id_rsa.pub.
+# Run 'ls ~/.ssh/*.pub' to see available keys.
+ssh_public_key_path = "~/.ssh/id_ed25519.pub"
