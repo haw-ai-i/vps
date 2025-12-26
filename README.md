@@ -51,36 +51,47 @@ Once the VPS is up, you need to transfer the `setup-bastion.sh` script to the se
    sudo bash ~/setup-bastion.sh
    ```
 
+### Standard Key Authorization Procedure
+Use this procedure to authorize any new machine (internal host or client laptop) to the Bastion.
+
+1. **On the machine to be authorized**:
+   ```bash
+   cat ~/.ssh/id_ed25519.pub
+   ```
+2. **Copy the string**.
+3. **On your Primary Laptop** (the one with SSH access to the Bastion):
+   ```bash
+   # Assign the copied string to a variable
+   NEW_KEY="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5..."
+   
+   # Authorize it on the Bastion
+   ssh bastionadmin@136.114.249.178 "echo '$NEW_KEY' >> ~/.ssh/authorized_keys"
+   ```
+
+---
+
 ## 2. Internal Host Setup
 
 For each host behind NAT you want to reach (e.g., `host-a`):
 
-1. **Authorize this host to the Bastion**:
-   Since the Bastion is hardened to only allow public key authentication, you cannot use `ssh-copy-id` from the internal host directly unless it already has access.
-   
-   Instead, from your **local laptop** (which ran Terraform), run:
+1. **Authorize this host**:
+   Follow the [Standard Key Authorization Procedure](#standard-key-authorization-procedure).
+
+2. **Clone the repository on the internal host**:
+   SSH into your internal host and clone this repository:
    ```bash
-   # Replace <REMOTE_PUB_KEY> with the content of ~/.ssh/id_ed25519.pub from the internal host
-   # Replace <BASTION_IP> with 136.114.249.178
-   ssh bastionadmin@136.114.249.178 "echo '<REMOTE_PUB_KEY>' >> ~/.ssh/authorized_keys"
+   git clone https://github.com/igormolybog/vps.git
+   cd vps/scripts/
    ```
 
-2. **Transfer the setup script**:
-   From your local project directory:
-   ```bash
-   scp scripts/setup-internal-host.sh internal-user@internal-host-ip:~/
-   ```
-
-3. **Run the setup script on the internal host**:
+3. **Run the setup script**:
    ```bash
    # Usage: ./setup-internal-host.sh <host_name> <bastion_ip> <bastion_user> <reverse_port>
-   bash ~/setup-internal-host.sh host-a 136.114.249.178 bastionadmin 2201
+   ./setup-internal-host.sh host-a 136.114.249.178 bastionadmin 2202
    ```
 
-4. **Verify the tunnel**:
-   ```bash
-   sudo systemctl status reverse-ssh-host-a
-   ```
+4. **Persistence (Optional)**:
+   The script will provide a `crontab` command at the end to ensure the tunnel starts automatically after a reboot.
 
 ## 3. Client (Laptop) Registration
 
@@ -92,15 +103,8 @@ On each laptop you want to use for connecting:
    ```
    This generates a unique key: `~/.ssh/id_ed25519_bastion_laptop-a`.
 
-2. **Authorize the laptop to the Bastion**:
-   Since the Bastion setup disables password login, you must authorize the new laptop using your **primary laptop** (the one that ran Terraform).
-   
-   From your **primary laptop**:
-   ```bash
-   # Copy the new laptop's public key (e.g. ~/.ssh/id_ed25519_bastion_laptop-a.pub)
-   # and add it to the Bastion's authorized_keys
-   ssh bastionadmin@136.114.249.178 "echo '$(cat /path/to/new/laptop/key.pub)' >> ~/.ssh/authorized_keys"
-   ```
+2. **Authorize the laptop**:
+   Follow the [Standard Key Authorization Procedure](#standard-key-authorization-procedure) using the newly generated key (`~/.ssh/id_ed25519_bastion_laptop-a.pub`).
 
 3. **Update your Local SSH Config**:
    Add these entries to your `~/.ssh/config`:
@@ -113,7 +117,7 @@ On each laptop you want to use for connecting:
 
    Host host-a
        HostName localhost
-       Port 2201
+       Port 2202
        User <internal_username_on_host_a>
        ProxyJump bastion
    ```
@@ -125,5 +129,19 @@ Now you can reach your internal host directly:
 ssh host-a
 ```
 
-## 5. Revoking Access
+## 5. Managing Tunnels
+
+### Stopping the Tunnel
+On the internal host, run:
+```bash
+pkill autossh
+```
+
+### Removing Persistence
+If you added the tunnel to `crontab`:
+1. Run `crontab -e`.
+2. Remove the `@reboot` line containing the tunnel command.
+3. Save and exit.
+
+## 6. Revoking Access
 To revoke a laptop's access, simply remove its unique public key from the Bastion's `/home/<bastionuser>/.ssh/authorized_keys` file.

@@ -20,10 +20,14 @@ else
 fi
 
 echo ""
-echo "Step 1: Copy this public key to the bastion:"
-echo "ssh-copy-id -i ${KEY_FILE}.pub <bastion_user>@<bastion_ip>"
+echo "Step 1: Copy this public key string:"
+cat "${KEY_FILE}.pub"
 echo ""
-echo "Step 2: Add these entries to your ~/.ssh/config:"
+echo "Step 2: Authorize it on the Bastion from your Primary Laptop:"
+echo "export NEW_KEY=\"\$(cat ${KEY_FILE}.pub)\""
+echo "ssh <bastion_user>@<bastion_ip> \"echo '\$NEW_KEY' >> ~/.ssh/authorized_keys\""
+echo ""
+echo "Step 3: Add these entries to your ~/.ssh/config:"
 echo ""
 cat <<EOF
 Host bastion
@@ -33,9 +37,9 @@ Host bastion
     IdentitiesOnly yes
 
 # Example for host-a
-# Host host-a
-#     HostName localhost
-#     Port 2201
-#     User <internal_username>
-#     ProxyJump bastion
+Host host-a
+    HostName localhost
+    Port 2202
+    User <internal_username>
+    ProxyJump bastion
 EOF
