@@ -56,9 +56,13 @@ Once the VPS is up, you need to transfer the `setup-bastion.sh` script to the se
 For each host behind NAT you want to reach (e.g., `host-a`):
 
 1. **Authorize this host to the Bastion**:
-   From the internal host, send its public key to the bastion:
+   Since the Bastion is hardened to only allow public key authentication, you cannot use `ssh-copy-id` from the internal host directly unless it already has access.
+   
+   Instead, from your **local laptop** (which ran Terraform), run:
    ```bash
-   ssh-copy-id bastionadmin@136.114.249.178
+   # Replace <REMOTE_PUB_KEY> with the content of ~/.ssh/id_ed25519.pub from the internal host
+   # Replace <BASTION_IP> with 136.114.249.178
+   ssh bastionadmin@136.114.249.178 "echo '<REMOTE_PUB_KEY>' >> ~/.ssh/authorized_keys"
    ```
 
 2. **Transfer the setup script**:
@@ -89,8 +93,13 @@ On each laptop you want to use for connecting:
    This generates a unique key: `~/.ssh/id_ed25519_bastion_laptop-a`.
 
 2. **Authorize the laptop to the Bastion**:
+   Since the Bastion setup disables password login, you must authorize the new laptop using your **primary laptop** (the one that ran Terraform).
+   
+   From your **primary laptop**:
    ```bash
-   ssh-copy-id -i ~/.ssh/id_ed25519_bastion_laptop-a bastionadmin@136.114.249.178
+   # Copy the new laptop's public key (e.g. ~/.ssh/id_ed25519_bastion_laptop-a.pub)
+   # and add it to the Bastion's authorized_keys
+   ssh bastionadmin@136.114.249.178 "echo '$(cat /path/to/new/laptop/key.pub)' >> ~/.ssh/authorized_keys"
    ```
 
 3. **Update your Local SSH Config**:

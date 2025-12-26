@@ -37,6 +37,7 @@ ExecStart=/usr/bin/autossh -M 0 -N \\
   -o "ExitOnForwardFailure=yes" \\
   -o "ServerAliveInterval=30" \\
   -o "ServerAliveCountMax=3" \\
+  -o "StrictHostKeyChecking=accept-new" \\
   -R 127.0.0.1:${REVERSE_PORT}:localhost:${LOCAL_PORT} \\
   ${BASTION_USER}@${BASTION_IP}
 Restart=always
@@ -46,9 +47,10 @@ RestartSec=10
 WantedBy=multi-user.target
 EOF
 
-# Reload and enable
+# Reload, enable and start
 sudo systemctl daemon-reload
 sudo systemctl enable "${SERVICE_NAME}"
+sudo systemctl start "${SERVICE_NAME}"
 
 echo "Service ${SERVICE_NAME} created and enabled."
 echo "To start it: sudo systemctl start ${SERVICE_NAME}"
