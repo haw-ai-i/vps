@@ -37,12 +37,12 @@ Once the VPS is up, you need to transfer the `setup-bastion.sh` script to the se
 1. **Transfer the script**:
    From your local terminal (inside the `vps` project directory), run:
    ```bash
-   scp scripts/setup-bastion.sh bastionadmin@136.114.249.178:~/
+   scp scripts/setup-bastion.sh bastionadmin@34.44.147.94:~/
    ```
 
 2. **SSH into the Bastion**:
    ```bash
-   ssh bastionadmin@136.114.249.178
+   ssh bastionadmin@34.44.147.94
    ```
 
 3. **Run the hardening script**:
@@ -65,7 +65,7 @@ Use this procedure to authorize any new machine (internal host or client laptop)
    NEW_KEY="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5..."
    
    # Authorize it on the Bastion
-   ssh bastionadmin@136.114.249.178 "echo '$NEW_KEY' >> ~/.ssh/authorized_keys"
+   ssh bastionadmin@34.44.147.94 "echo '$NEW_KEY' >> ~/.ssh/authorized_keys"
    ```
 
 ---
@@ -87,7 +87,7 @@ For each host behind NAT you want to reach (e.g., `host-a`):
 3. **Run the setup script**:
    ```bash
    # Usage: ./setup-internal-host.sh <host_name> <bastion_ip> <bastion_user> <reverse_port>
-   ./setup-internal-host.sh host-a 136.114.249.178 bastionadmin 2202
+   ./setup-internal-host.sh host-a 34.44.147.94 bastionadmin 2202
    ```
 
 4. **Persistence (Optional)**:
@@ -110,7 +110,7 @@ On each laptop you want to use for connecting:
    Add these entries to your `~/.ssh/config`:
    ```text
    Host bastion
-       HostName 136.114.249.178
+       HostName 34.44.147.94
        User bastionadmin
        IdentityFile ~/.ssh/id_ed25519_bastion_laptop-a
        IdentitiesOnly yes
